@@ -12,8 +12,8 @@ class WeatherViewModel:WeatherViewModelProtocol,ObservableObject{
    @Published  private var current:Current?
    @Published  private var forecast:Forecast?
    @Published private var location:Location?
-    var lat:Double?
-    var long:Double?
+    @Published var lat:Double?
+    @Published  var long:Double?
     init(networkServices: NetworkService? = nil) {
         self.networkServices = networkServices
       
@@ -38,6 +38,7 @@ class WeatherViewModel:WeatherViewModelProtocol,ObservableObject{
         let lon=self.long ?? 31
         
         networkServices?.fetchWeatherLocation(lat: Lat, long: lon, completion: {
+            
             data in
             self.current=data.current
             self.forecast=data.forecast

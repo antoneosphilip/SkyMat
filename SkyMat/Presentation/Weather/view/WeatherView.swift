@@ -9,8 +9,9 @@ import SwiftUI
 struct WeatherView: View {
     
     @StateObject var weatherViewModel: WeatherViewModel
+    var router: Router
     
-    private var textColor: Color {
+     @state var textColor: Color {
         weatherViewModel.isMorning() ? .black : .white
     }
     
@@ -55,7 +56,8 @@ struct WeatherView: View {
                     
                     WeatherCardSection(
                         forecastday: weatherViewModel.forecastMutable?.forecastday ?? [],
-                        textColor: textColor
+                        textColor: textColor,
+                        router: router
                     )
                     .padding(.horizontal, 16)
                     .padding(.bottom, 16)
@@ -73,13 +75,27 @@ struct WeatherView: View {
                     .padding(.bottom, 40)
                 }
             }
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        router.navigate(to: .search)
+                    }) {
+                        Image(systemName: "magnifyingglass")
+                            .font(.system(size: 20, weight: .medium))
+                            .foregroundColor(textColor)
+                    }
+                }
+            }.onChange(of: weatherViewModel.lat) { _, _ in
+                weatherViewModel.fetchWeatherLatLon()
+            }
         }
     }
-    
+   
     struct WeatherCardSection: View {
         var forecastday: [Forecastday]
         var textColor: Color
-        
+        var router: Router
+
         var body: some View {
             VStack(alignment: .leading, spacing: 0) {
                 Text("3-DAY FORECAST")
@@ -97,8 +113,8 @@ struct WeatherView: View {
                     }
                     DayForecastRow(day: day, textColor: textColor)
                         .onTapGesture {
-                                    router.navigate(to: .details(index: index))
-                                }
+                            router.navigate(to: .details(index: index))
+                        }
                 }
             }
             .background(.ultraThinMaterial)

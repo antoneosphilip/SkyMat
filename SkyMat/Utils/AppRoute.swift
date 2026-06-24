@@ -7,7 +7,7 @@
 
 import Foundation
 enum Route: Hashable {
-    case details()
+    case details(index: Int)
     case search
     case savedLocations
 }

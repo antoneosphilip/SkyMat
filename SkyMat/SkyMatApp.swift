@@ -4,9 +4,9 @@
 //
 //  Created by Antoneos Philip on 22/06/2026.
 //
-
 import SwiftUI
 import SwiftData
+
 @main
 struct SkyMatApp: App {
 
@@ -23,24 +23,27 @@ struct SkyMatApp: App {
 
     var body: some Scene {
         WindowGroup {
+         
             NavigationStack(path: $router.path) {
-                WeatherView(weatherViewModel: weatherViewModel)
-                    .environmentObject(weatherViewModel)
-                    .environmentObject(router)
+                WeatherView(weatherViewModel: weatherViewModel, router: router)
                     .navigationDestination(for: Route.self) { route in
                         switch route {
-
                         case .details(let index):
-                            
-                            WeatherDetails(forestDay:weatherViewModel.forecastDays[0], textColor: Color(.black))
-
-                     
+                            WeatherDetails(forestDay: weatherViewModel.forecastDays[index], textColor:
+                                            weatherViewModel.isMorning() ? Color(.black):Color(.white),
+                                           videoMode: weatherViewModel.isMorning() ? "morninig":"night"
+                            )
                         case .search:
-                            ContentView()
+                            SearchView(
+                                mode: weatherViewModel.isMorning() ? "morninig":"night",
+                                router: router,
+                                textColor: weatherViewModel.isMorning() ? Color(.black):Color(.white),
+                                weatherViewModel: weatherViewModel,
+
+                            )
                         case .savedLocations:
                             ContentView()
                         }
-                        
                     }
             }
         }

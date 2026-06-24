@@ -4,65 +4,90 @@
 //
 //  Created by Antoneos Philip on 23/06/2026.
 //
-
 import SwiftUI
-import AVFoundation
+import AVKit
 
 struct VideoBackgroundView: UIViewRepresentable {
-    var mode:String
-    class Coordinator {
-        var player: AVPlayer?
-        var playerLayer: AVPlayerLayer?
-    }
 
-    func makeCoordinator() -> Coordinator {
-        Coordinator()
-    }
+    let mode: String
 
     func makeUIView(context: Context) -> UIView {
-        let view = UIView()
-        view.backgroundColor = .black
-
-        guard let path = Bundle.main.path(forResource:mode, ofType: "mp4") else {
-            print("❌ Video not found in bundle")
-            return view
-        }
-
-        let url = URL(fileURLWithPath: path)
-
-        let item = AVPlayerItem(url: url)
-        let player = AVPlayer(playerItem: item)
-
-        player.isMuted = true
-        player.actionAtItemEnd = .none
-
-        context.coordinator.player = player
-
-        let playerLayer = AVPlayerLayer(player: player)
-        playerLayer.videoGravity = .resizeAspectFill
-        playerLayer.frame = view.bounds
-
-        context.coordinator.playerLayer = playerLayer
-
-        view.layer.addSublayer(playerLayer)
-
-        player.play()
-
-        NotificationCenter.default.addObserver(
-            forName: .AVPlayerItemDidPlayToEndTime,
-            object: item,
-            queue: .main
-        ) { _ in
-            player.seek(to: .zero)
-            player.play()
-        }
-
-        return view
+        LoopingVideoView(mode: mode)
     }
 
     func updateUIView(_ uiView: UIView, context: Context) {
-        DispatchQueue.main.async {
-            context.coordinator.playerLayer?.frame = uiView.bounds
+    }
+}
+
+final class LoopingVideoView: UIView {
+
+    private var playerLayer: AVPlayerLayer?
+
+    init(mode: String) {
+        super.init(frame: .zero)
+
+        backgroundColor = .black
+
+        let player = VideoManager.shared.player(for: mode)
+
+        let layer = AVPlayerLayer(player: player)
+        layer.videoGravity = .resizeAspectFill
+
+        self.playerLayer = layer
+
+        self.layer.addSublayer(layer)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        playerLayer?.frame = bounds
+    }
+}
+
+import Foundation
+import AVKit
+
+final class VideoManager {
+
+    static let shared = VideoManager()
+
+    private init() {}
+
+    private var players: [String: AVQueuePlayer] = [:]
+    private var loopers: [String: AVPlayerLooper] = [:]
+
+    func player(for mode: String) -> AVQueuePlayer {
+
+        if let player = players[mode] {
+            return player
         }
+
+        guard let url = Bundle.main.url(
+            forResource: mode,
+            withExtension: "mp4"
+        ) else {
+            fatalError("Video not found: \(mode).mp4")
+        }
+
+        let item = AVPlayerItem(url: url)
+
+        let player = AVQueuePlayer()
+
+        let looper = AVPlayerLooper(
+            player: player,
+            templateItem: item
+        )
+
+        player.isMuted = true
+        player.play()
+
+        players[mode] = player
+        loopers[mode] = looper
+
+        return player
     }
 }
