@@ -11,18 +11,19 @@ struct WeatherView: View {
     @StateObject var weatherViewModel: WeatherViewModel
     var router: Router
     
-     @state var textColor: Color {
-        weatherViewModel.isMorning() ? .black : .white
+      var textColor: Color {
+          weatherViewModel.isDay ? .black : .white
     }
     
     var body: some View {
         ZStack {
             VideoBackgroundView(
-                mode: weatherViewModel.isMorning() ? "morninig" : "night"
+                mode:  weatherViewModel.isDay ? "morninig" : "night"
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .ignoresSafeArea()
-            
+            .id(weatherViewModel.isDay)
+
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {
                     VStack(spacing: 6) {
@@ -81,6 +82,15 @@ struct WeatherView: View {
                         router.navigate(to: .search)
                     }) {
                         Image(systemName: "magnifyingglass")
+                            .font(.system(size: 20, weight: .medium))
+                            .foregroundColor(textColor)
+                    }
+                }
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: {
+                        router.navigate(to: .savedLocations)
+                    }) {
+                        Image(systemName: "bookmark.fill")
                             .font(.system(size: 20, weight: .medium))
                             .foregroundColor(textColor)
                     }

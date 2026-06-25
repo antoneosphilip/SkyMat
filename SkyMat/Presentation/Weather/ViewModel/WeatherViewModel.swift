@@ -14,6 +14,7 @@ class WeatherViewModel:WeatherViewModelProtocol,ObservableObject{
    @Published private var location:Location?
     @Published var lat:Double?
     @Published  var long:Double?
+    @Published var isDay: Bool = true
     init(networkServices: NetworkService? = nil) {
         self.networkServices = networkServices
       
@@ -32,22 +33,21 @@ class WeatherViewModel:WeatherViewModelProtocol,ObservableObject{
         location
      }
     
-    func fetchWeatherLatLon(){
-        let Lat=self.lat ?? 30
+    func fetchWeatherLatLon() {
+        let lat = self.lat ?? 30
+        let lon = self.long ?? 31
         
-        let lon=self.long ?? 31
-        
-        networkServices?.fetchWeatherLocation(lat: Lat, long: lon, completion: {
-            
-            data in
-            self.current=data.current
-            self.forecast=data.forecast
-            self.location=data.location
-            print("data\(data.current.cloud)")
+        networkServices?.fetchWeatherLocation(lat: lat, long: lon, completion: { data in
+            DispatchQueue.main.async {
+                self.current = data.current
+                self.forecast = data.forecast
+                self.location = data.location
+                self.isDay = data.current.is_day == 1
+                print("Is Day",self.isDay)
 
+            }
         })
     }
-    
     func getForecastCount() -> Int {
         return (forecast?.forecastday.count) ?? 0
     }
@@ -55,7 +55,6 @@ class WeatherViewModel:WeatherViewModelProtocol,ObservableObject{
         return (forecast?.forecastday[index])!
     }
     func isMorning() -> Bool {
-        print("Is Day",currentMutable?.is_day)
         return currentMutable?.is_day == 1  ? true : false
     }
 }
