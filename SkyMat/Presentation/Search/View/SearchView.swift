@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-
+import SwiftData
 struct SearchView: View {
     @StateObject private var viewModel = SearchViewModel()
     @State private var searchText = ""
@@ -18,12 +18,14 @@ struct SearchView: View {
     var displayedCities: [City] {
         searchText.isEmpty ? viewModel.getCountries() : viewModel.citiesMutiable
     }
+    
+    @Environment(\.modelContext)private var cxt
 
     var body: some View {
         ZStack {
             VideoBackgroundView(mode: mode)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .ignoresSafeArea()
+              .ignoresSafeArea()
 
             VStack(spacing: 0) {
                 HStack {
@@ -58,6 +60,9 @@ struct SearchView: View {
                             CityCard(city: city, textColor: textColor).onTapGesture {
                                 weatherViewModel.lat=city.lat
                                 weatherViewModel.long=city.lon
+                                let newCity=CityEntity(name: city.name,region: city.region,country: city.country,lat: city.lat,lon: city.lon)
+                                cxt.insert(newCity)
+                                try? cxt.save()
                                 router.pop()
                             }
                         }
