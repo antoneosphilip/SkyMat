@@ -9,4 +9,6 @@ import Foundation
 protocol NetworkServiceProtocol {
     
     func fetchWeatherLocation(lat:Double,long:Double,completion: @escaping (Weather)->Void)
+    
+    func searchCountyByName(countryName:String,completion: @escaping ([City])->Void)
 }
